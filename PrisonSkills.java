@@ -19,22 +19,30 @@ import java.util.List;
 
 public final class PrisonSkills extends JavaPlugin {
 
+    private MongoClient mongoClient;
+    private MongoDatabase database;
+    private static MongoCollection<Document> collection;
+
     @Override
     public void onEnable() {
+        //Database
+        String uri = "";    //ENTER DATABASE CONNECTION STRING
+        mongoClient = MongoClients.create(uri);
+        database = mongoClient.getDatabase("PrisonSkills");
+        collection = database.getCollection("skills");
         //Utils
         Skill miningSkillPlugin = new Skill(new int[]{50, 100, 200, 400, 800, 1600, 3200, 6400, 12800}, "Mining");
         Skill combatSkillPlugin = new Skill(new int[]{50, 100, 200, 400, 800, 1600, 3200, 6400, 12800}, "Combat");
         Skill fishingSkillPlugin = new Skill(new int[]{50, 100, 200, 400, 800, 1600, 3200, 6400, 12800}, "Fishing");
         Skill guardSkillPlugin = new Skill(new int[]{50, 100, 200, 400, 800, 1600, 3200, 6400, 12800}, "Guard");
-        Alerts alertsPlugin = new Alerts();
         SkillsGUI skillsGUIPlugin = new SkillsGUI(miningSkillPlugin, combatSkillPlugin, fishingSkillPlugin, guardSkillPlugin);
         //Commands
         getCommand("mining").setExecutor(new MiningCommand(miningSkillPlugin));
         getCommand("skills").setExecutor(new OpenSkillsGUI(skillsGUIPlugin));
         //Listeners
-        getServer().getPluginManager().registerEvents(new Mining(miningSkillPlugin, alertsPlugin), this);
-        getServer().getPluginManager().registerEvents(new Combat(combatSkillPlugin, alertsPlugin), this);
-        getServer().getPluginManager().registerEvents(new Fishing(fishingSkillPlugin, alertsPlugin), this);
+        getServer().getPluginManager().registerEvents(new Mining(miningSkillPlugin), this);
+        getServer().getPluginManager().registerEvents(new Combat(combatSkillPlugin), this);
+        getServer().getPluginManager().registerEvents(new Fishing(fishingSkillPlugin), this);
         getServer().getPluginManager().registerEvents(skillsGUIPlugin, this);
         getServer().getPluginManager().registerEvents(new Database(miningSkillPlugin, combatSkillPlugin, fishingSkillPlugin, guardSkillPlugin), this);
 
@@ -44,5 +52,9 @@ public final class PrisonSkills extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
 
+    }
+
+    public static MongoCollection<Document> getCollection() {
+        return collection;
     }
 }
